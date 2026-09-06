@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Gangotri Medical Agencies WhatsApp stock automation dashboard">
+  <title>Gangotri WhatsApp Automation</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div><p class="eyebrow">GANGOTRI MEDICAL AGENCIES</p><h1>WhatsApp stock assistant</h1><p class="subtitle">Manage today's inventory and reply to customers through the official WhatsApp Cloud API.</p></div>
+      <span id="status" class="status">Checking service...</span>
+    </header>
+    <section class="grid">
+      <article class="card">
+        <div class="card-heading"><h2>Inventory</h2><button id="refresh" class="secondary">Refresh</button></div>
+        <form id="stock-form" class="form-row">
+          <input name="name" placeholder="Medicine name" required maxlength="120">
+          <input name="quantity" type="number" min="0" placeholder="Quantity" required>
+          <input name="price" type="number" min="0" step="0.01" placeholder="Price (INR)" required>
+          <button type="submit">Save stock</button>
+        </form>
+        <p id="stock-error" class="error" role="alert"></p>
+        <div class="table-wrap"><table><thead><tr><th>Medicine</th><th>Qty</th><th>Price</th><th></th></tr></thead><tbody id="stock-list"></tbody></table></div>
+      </article>
+      <article class="card">
+        <h2>Send a WhatsApp message</h2>
+        <form id="message-form" class="stack">
+          <label>Recipient phone (country code)<input name="to" inputmode="numeric" placeholder="919876543210" required></label>
+          <label>Message<textarea name="message" rows="6" maxlength="4096" placeholder="Your message" required></textarea></label>
+          <button type="submit">Send message</button>
+        </form>
+        <p id="message-result" class="notice" role="status"></p>
+      </article>
+    </section>
+    <footer>Secure HTTPS deployment - WhatsApp Cloud API - Supabase database</footer>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

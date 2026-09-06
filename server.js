@@ -55,6 +55,45 @@ async function sendWhatsAppMessage(to, body) {
   return result.json();
 }
 
+async function askAi(customerMessage) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return null;
+  const result = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+      temperature: 0.2,
+      max_tokens: 250,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are the polite WhatsApp assistant for Gangotri Medical Agencies in Balaghat, India. Answer briefly and clearly. Never diagnose, prescribe, or claim a medicine is safe for a person. For medical advice, direct the customer to a doctor or pharmacist. You can answer store questions, ordering guidance, and general greetings.'
+        },
+        { role: 'user', content: customerMessage }
+      ]
+    })
+  });
+  if (!result.ok) throw new Error(`AI API returned ${result.status}: ${await result.text()}`);
+  const data = await result.json();
+  return data.choices?.[0]?.message?.content?.trim() || null;
+}
+
+async function buildCustomerReply(text) {
+  const normalized = text.toLowerCase();
+  const greetings = ['hi', 'hello', 'hey', 'namaste', 'good morning', 'good evening', 'help'];
+  if (greetings.some((greeting) => normalized === greeting || normalized.startsWith(`${greeting} `))) {
+    return 'Hello! 👋 Welcome to *Gangotri Medical Agencies*.\n\nYou can ask me about medicine stock, prices, store information, or how to place an order.';
+  }
+  if (/(address|location|where|shop|store|open|timing|time)/.test(normalized)) {
+    return '📍 *Gangotri Medical Agencies*\nBalaghat (M.P.)\n\nPlease call the store for today’s opening hours and delivery availability.';
+  }
+  if (/(price|cost|rate|available|stock|medicine|tablet|capsule|syrup)/.test(normalized)) {
+    return formatStockReply(text, await findStock(text));
+  }
+  return (await askAi(text)) || 'Thanks for your message! I can help with medicine stock, prices, store information, and orders. Please tell me the medicine name or your question.';
+}
+
 async function findStock(searchTerm) {
   if (!supabase) throw new Error('Database is not configured');
   const { data, error } = await supabase.from('stock').select('name, quantity, price').ilike('name', `%${searchTerm}%`).order('name').limit(5);
@@ -130,7 +169,7 @@ app.post('/webhook/whatsapp', async (request, response) => {
     if (message.type !== 'text' || !message.from) continue;
     try {
       const text = message.text.body.trim();
-      await sendWhatsAppMessage(message.from, formatStockReply(text, await findStock(text)));
+      await sendWhatsAppMessage(message.from, await buildCustomerReply(text));
     } catch (error) { console.error('Webhook message handling failed:', error.message); }
   }
 });

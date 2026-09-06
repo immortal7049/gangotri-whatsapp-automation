@@ -51,6 +51,8 @@ on conflict (name) do update set
 | `WHATSAPP_PHONE_NUMBER_ID` | Meta phone number ID |
 | `WHATSAPP_APP_SECRET` | Meta app secret used to verify webhook signatures |
 | `WHATSAPP_VERIFY_TOKEN` | A long random string you choose |
+| `OPENAI_API_KEY` | Optional server-only key for free-form AI replies |
+| `OPENAI_MODEL` | Optional model name, default `gpt-4o-mini` |
 
 ### 4. Connect WhatsApp Cloud API
 
@@ -64,6 +66,8 @@ on conflict (name) do update set
 If a medicine still returns “not found”, open the deployed dashboard, add it under **Inventory**, and click **Save stock**. The dashboard and WhatsApp webhook use the same Supabase `stock` table.
 
 The dashboard sends outbound messages through `POST /api/messages`. WhatsApp business-initiated messages may require an approved template outside the 24-hour customer service window.
+
+The assistant automatically handles greetings, store/location questions, and medicine, price, and stock enquiries. With `OPENAI_API_KEY` configured, other customer questions receive an AI-generated reply. The AI is instructed not to diagnose or prescribe; customers are directed to a doctor or pharmacist for medical advice. Without that optional key, a safe helpful fallback is used.
 
 ### 5. Local verification
 
